@@ -10,7 +10,7 @@ class Dot:
 
 class Ship:
     # Класс кораблей
-    def __init__(self, lenth, bow, direction):
+    def __init__(self, lenth, bow, rotation):
         self.lenth = lenth
         self.bow = bow
         self.rotation = rotation
@@ -29,22 +29,40 @@ class Ship:
 
 class Board:
     # Создание доски и определение её свойств
-    def __init__(self, size = 6, shipslist = 7, hid=False, aliveship=None):
+    def __init__(self, size=6, hid=False):
         self.size = size
-        self.shipslist = shipslist
         self.hid = hid
-        self.aliveship = aliveship
+        self.busy = []
+        self.board = [["o"] * size for _ in range(size)]
 
     def shot(self, dot):
-        if dot not in
+        # Выстрел в корабль
+        if self.out(dot):
+            raise BoardOutException()
+        elif dot in self.busy:
+            raise BoardUsedException()
 
+        self.busy.append(dot)
 
+        for ship in self.ships:
+            if dot in ship.dots:
+                ship.hp -= 1
+                self.board[dot.x][dot.y] = "x"
+                if ship.hp == 0:
+                    self.hp -= ship.length
+                    self.contour(ship, verb=True)
+                    return False, "Корабль уничтожен"
+                else:
+                    return True, "Корабль поврежден"
 
+        self.board[dot.x][dot.y] = "*"
+        return False, "Мимо"
 
 
 class BoardOutException(Exception):
     pass
     # исключение ошибки, когда координаты за пределами доски
+
 
 class BoardUsedException(Exception):
     pass
