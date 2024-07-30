@@ -1,11 +1,23 @@
 from random import randint
 import time
 
-print('-'*20, '\nДобро пожаловать в игру Морской бой!\n', '-'*20)
-time.sleep(2)
-print('Пользователь играет с Компьютером - и ходит Первым!'
-      'вводим через пробел 2 координаты:'
-      '- номер строки и номер столбца.')
+
+class BoardException(Exception):
+    pass
+
+
+class BoardOutException(BoardException):
+    pass
+    # исключение ошибки, когда координаты за пределами доски
+
+
+class BoardUsedException(BoardException):
+    pass
+    # исключение ошибки, когда координаты используются
+
+
+class BoardWrongShipException(BoardException):
+    pass
 
 
 class Dot:
@@ -20,9 +32,9 @@ class Dot:
 
 class Ship:
     # Класс кораблей
-    def __init__(self, lenth, bow, rotation):
-        self.lenth = lenth
+    def __init__(self, bow, lenth, rotation):
         self.bow = bow
+        self.lenth = lenth
         self.rotation = rotation
         self.hp = lenth
 
@@ -31,9 +43,15 @@ class Ship:
         # Возвращение точек, которые занимает корабль
         ship_dots = []
         for i in range(self.lenth):
-            dot_x = self.bow_x + i * direction[0]
-            dot_y = self.bow_y + i * direction[1]
-            ship_dots.append(Dot(dot_x, dot_y))
+            bow.x = self.bow_x
+            bow.y = self.bow_y
+
+            if self.rotation == 0:
+                bow.x += 1
+
+            if self.rotation == 1:
+                bow.y += 1
+            ship_dots.append(Dot(bow.x, bow.y))
         return ship_dots
 
 
@@ -44,19 +62,7 @@ class Board:
         self.hid = hid
         self.busy = []
         self.board = [["."] * size for _ in range(size)]
-        self.shipsunk = 0
-        self.shipalive = 7
-
-    class BoardOutException(Exception):
-        pass
-        # исключение ошибки, когда координаты за пределами доски
-
-    class BoardUsedException(Exception):
-        pass
-        # исключение ошибки, когда координаты используются
-
-    class BoardWrongShipException(BoardException):
-        pass
+        self.shipalive = 0
 
     def boardout(self, dot):
         return not ((0 <= dot.x < self.size) and (0 <= dot.y < self.size))
@@ -70,7 +76,7 @@ class Board:
             self.board[dot.x][dot.y] = "■"
             self.busy.append(dot)
         self.ships.append(ship)
-        self.lives += ship.length
+        self.shipalive += 1
         self.contour(ship)
 
     def contour(self, ship, verb=False):
@@ -92,20 +98,21 @@ class Board:
         # Выстрел в корабль
         if self.boardout(dot):
             raise BoardOutException()
-        elif dot in self.busy:
+
+        if dot in self.busy:
             raise BoardUsedException()
+
         self.busy.append(dot)
+
         for ship in self.ships:
             if dot in ship.dots:
                 ship.hp -= 1
                 self.board[dot.x][dot.y] = "x"
                 if ship.hp == 0:
-                    self.hp -= ship.length
                     self.contour(ship, verb=True)
                     time.sleep(2)
-                    self.shipsunk += 1
                     self.shipalive -= 1
-                    print(f"Корабль уничтожен. Осталось {self.shipalive} кораблей")
+                    f"Корабль уничтожен. Осталось {self.shipalive} кораблей"
                     return False
                 else:
                     time.sleep(2)
@@ -113,7 +120,8 @@ class Board:
                     return True
         self.board[dot.x][dot.y] = "●"
         time.sleep(2)
-        return False, "Было близко, но мы промахнулись!"
+        print("Было близко, но мы промахнулись!")
+        return False
 
     def show_board(self):
         # Создание границ поля, для ориентирования на нем
@@ -125,6 +133,7 @@ class Board:
 
 class Main:
     # установка основных параметров самой игры
+
     def __init__(self, size=6):
         self.size = size
         pl = self.random_board()
@@ -154,13 +163,18 @@ class Main:
                 try:
                     board.add_ship(ship)
                     break
-                except BoardWrongShipException:
+                except BoardWrongShipException():
                     pass
         board.begin()
         return board
 
     def game(self):
         # основной игровой цикл
+        print('-' * 20, '\nДобро пожаловать в игру Морской бой!\n', '-' * 20)
+        time.sleep(2)
+        print('Капитан вражеский флот на горизонте!'
+              'Нам необходимы 2 координаты (через пробел) для выстрела:'
+              '- номер строки и номер столбца! Скорее капитан.')
         num = 0
         while True:
             print('-' * 20)
@@ -175,7 +189,7 @@ class Main:
             if num % 2 == 0:
                 print('-' * 20)
                 time.sleep(1)
-                print('Ход Пользователя - введите Ряд и Столбец через пробел')
+                print('Капитан, куда стрелять? (введите Ряд и Столбец через пробел): ')
                 time.sleep(2)
                 repeat = self.us.move()
             else:
@@ -187,16 +201,16 @@ class Main:
             if repeat:
                 num -= 1
 
-            if self.ai.board.count == 7:
+            if self.ai.board.shipalive == 0:
                 print('-' * 20)
                 time.sleep(2)
-                print('Пользователь Выиграл!')
+                print('Капитан, мы выйграли!')
                 break
 
-            if self.us.board.count == 7:
+            if self.us.board.shipalive == 0:
                 print('-' * 20)
                 time.sleep(2)
-                print('Компьютер Выиграл!')
+                print('Наш флота потопили, мы проиграли!')
                 break
             num += 1
 
@@ -227,7 +241,7 @@ class AI(Player):
     # дочерний класс - Игрок ИИ
     def ask(self):
         d = Dot(randint(0, 5), randint(0, 5))
-        time.sleep(3)
+        time.sleep(2)
         print(f'Компьютер пошёл так: {d.x + 1} {d.y + 1}')
         return d
 
