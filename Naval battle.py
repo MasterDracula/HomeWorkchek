@@ -4,6 +4,7 @@ import time
 
 class BoardException(Exception):
     pass
+    # определяеся общий класс ошибок
 
 
 class BoardOutException(BoardException):
@@ -18,6 +19,7 @@ class BoardUsedException(BoardException):
 
 class BoardWrongShipException(BoardException):
     pass
+    # исключение ошибки, когда корабль неправильно расположен на поле
 
 
 class Dot:
@@ -43,15 +45,15 @@ class Ship:
         # Возвращение точек, которые занимает корабль
         ship_dots = []
         for i in range(self.lenth):
-            bow_x = self.bow_x
-            bow_y = self.bow_y
-
+            x = self.bow.x
+            y = self.bow.y
+            # выбор ориентации корабля (вертикальное и горизонтальное)
             if self.rotation == 0:
-                bow_x += 1
+                x += 1
 
             if self.rotation == 1:
-                bow_y += 1
-            ship_dots.append(Dot(bow_x, bow_y))
+                y += 1
+            ship_dots.append(Dot(x, y))
         return ship_dots
 
 
@@ -61,6 +63,7 @@ class Board:
         self.size = size
         self.hid = hid
         self.busy = []
+        self.ships = []
         self.board = [["."] * size for _ in range(size)]
         self.shipalive = 0
 
@@ -71,7 +74,7 @@ class Board:
         # Добавление корабля на карту
         for dot in ship.dots:
             if self.boardout(dot) or dot in self.busy:
-                raise BoardOutException()
+                raise BoardWrongShipException(BoardException)
         for dot in ship.dots:
             self.board[dot.x][dot.y] = "■"
             self.busy.append(dot)
@@ -89,7 +92,7 @@ class Board:
         for dot in ship.dots:
             for dx, dy in near:
                 cont = Dot(dot.x + dx, dot.y + dy)
-                if not (self.out(cont)) and cont not in self.busy:
+                if not (self.boardout(cont)) and cont not in self.busy:
                     if verb:
                         self.board[cont.x][cont.y] = "*"
                     self.busy.append(cont)
@@ -122,6 +125,9 @@ class Board:
         time.sleep(2)
         print("Было близко, но мы промахнулись!")
         return False
+
+    def begin(self):
+        self.busy = []
 
     def show_board(self):
         # Создание границ поля, для ориентирования на нем
