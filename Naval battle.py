@@ -43,15 +43,15 @@ class Ship:
         # Возвращение точек, которые занимает корабль
         ship_dots = []
         for i in range(self.lenth):
-            bow.x = self.bow_x
-            bow.y = self.bow_y
+            bow_x = self.bow_x
+            bow_y = self.bow_y
 
             if self.rotation == 0:
-                bow.x += 1
+                bow_x += 1
 
             if self.rotation == 1:
-                bow.y += 1
-            ship_dots.append(Dot(bow.x, bow.y))
+                bow_y += 1
+            ship_dots.append(Dot(bow_x, bow_y))
         return ship_dots
 
 
@@ -163,7 +163,7 @@ class Main:
                 try:
                     board.add_ship(ship)
                     break
-                except BoardWrongShipException():
+                except BoardWrongShipException:
                     pass
         board.begin()
         return board
