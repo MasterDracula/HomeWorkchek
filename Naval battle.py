@@ -129,12 +129,13 @@ class Board:
     def begin(self):
         self.busy = []
 
-    def show_board(self):
+    def __str__(self):
         # Создание границ поля, для ориентирования на нем
         front_board = ""
         front_board += "  | 1 | 2 | 3 | 4 | 5 | 6 |"
-        for i, row in enumerate(self.field):
+        for i, row in enumerate(self.board):
             front_board += f"\n{chr(ord('A') + i)} | " + " | ".join(row) + " |"
+        return str(front_board)
 
 
 class Main:
@@ -177,7 +178,7 @@ class Main:
     def game(self):
         # основной игровой цикл
         print('-' * 20, '\nДобро пожаловать в игру Морской бой!\n', '-' * 20)
-        time.sleep(2)
+        time.sleep(1)
         print('Капитан вражеский флот на горизонте!'
               'Нам необходимы 2 координаты (через пробел) для выстрела:'
               '- номер строки и номер столбца! Скорее капитан.')
@@ -195,7 +196,7 @@ class Main:
             if num % 2 == 0:
                 print('-' * 20)
                 time.sleep(1)
-                print('Капитан, куда стрелять? (введите Ряд и Столбец через пробел): ')
+                print('Капитан, куда стрелять? (введите Столбец и Ряд через пробел): ')
                 time.sleep(2)
                 repeat = self.us.move()
             else:
@@ -248,7 +249,7 @@ class AI(Player):
     def ask(self):
         d = Dot(randint(0, 5), randint(0, 5))
         time.sleep(2)
-        print(f'Компьютер пошёл так: {d.x + 1} {d.y + 1}')
+        print(f'Враг выстрелил сюда: {d.x + 1} {d.y + 1}')
         return d
 
 
@@ -268,7 +269,7 @@ class User(Player):
                 print(' Таких координат нет =( ')
                 continue
 
-            x, y = int(x), int(y)
+            x, y = int(x), str(y)
             return Dot(x - 1, y - 1)
 
 
