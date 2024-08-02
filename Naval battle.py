@@ -49,10 +49,9 @@ class Ship:
             y = self.bow.y
             # выбор ориентации корабля (вертикальное и горизонтальное)
             if self.rotation == 0:
-                x += 1
-
-            if self.rotation == 1:
-                y += 1
+                x += i
+            elif self.rotation == 1:
+                y += i
             ship_dots.append(Dot(x, y))
         return ship_dots
 
@@ -115,27 +114,30 @@ class Board:
                     self.contour(ship, verb=True)
                     time.sleep(2)
                     self.shipalive -= 1
-                    f"Корабль уничтожен. Осталось {self.shipalive} кораблей"
+                    print(f"Корабль уничтожен. Осталось {self.shipalive} кораблей")
                     return False
                 else:
                     time.sleep(2)
-                    f"Вижу дым на горизонте! Попадание!"
+                    print("Вижу дым на горизонте! Попадание!")
                     return True
         self.board[dot.x][dot.y] = "●"
         time.sleep(2)
-        print("Было близко, но мы промахнулись!")
+        print("Мимо!")
         return False
-
-    def begin(self):
-        self.busy = []
 
     def __str__(self):
         # Создание границ поля, для ориентирования на нем
         front_board = ""
         front_board += "  | 1 | 2 | 3 | 4 | 5 | 6 |"
         for i, row in enumerate(self.board):
-            front_board += f"\n{chr(ord('A') + i)} | " + " | ".join(row) + " |"
-        return str(front_board)
+            front_board += f"\n{i + 1} | " + " | ".join(row) + " |"
+
+        if self.hid:  # в скрытом поле игрока ИИ изначально ставим только "."
+            front_board = front_board.replace("■", ".")
+        return front_board
+
+    def begin(self):
+        self.busy = []
 
 
 class Main:
@@ -179,9 +181,10 @@ class Main:
         # основной игровой цикл
         print('-' * 20, '\nДобро пожаловать в игру Морской бой!\n', '-' * 20)
         time.sleep(1)
-        print('Капитан вражеский флот на горизонте!'
-              'Нам необходимы 2 координаты (через пробел) для выстрела:'
-              '- номер строки и номер столбца! Скорее капитан.')
+        print('Капитан вражеский флот на горизонте! '
+              'Нам необходимы координаты для выстрела'
+              '- номер строки и номер столбца (через пробел)! '
+              ' Скорее капитан.')
         num = 0
         while True:
             print('-' * 20)
@@ -265,11 +268,11 @@ class User(Player):
 
             x, y = cords
 
-            if not (x.isdigit()) or not (y.isalpha()):
+            if not (x.isdigit()) or not (y.isdigit()):
                 print(' Таких координат нет =( ')
                 continue
 
-            x, y = int(x), str(y)
+            x, y = int(x), int(y)
             return Dot(x - 1, y - 1)
 
 
