@@ -10,7 +10,7 @@ def coordinate_system():
         print("Это не число")
         coordinate_system()
     j = int(j)
-    if 0 <= i and j < 3:
+    if 0 <= i < 3 and 0<= j < 3:
         coordinate_list = [i, j]
         return coordinate_list
     else:
@@ -82,6 +82,7 @@ def game():
           "\nДля того, чтобы поставить свой символ "
           "необходимо выбрать строку и столбец."
           "\nВыбор начинается с 0 и заканчивается 2")
+    turn = 0
     while True:
         list = coordinate_system()
         i = list[0]
@@ -89,7 +90,6 @@ def game():
         if board[i][j] != "-":
             print("Клетка занятна, выберите другую")
             coordinate_system()
-        turn = 0
         if turn % 2 == 0:
             symbol = "x"
         else:
