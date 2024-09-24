@@ -115,7 +115,7 @@ class Board:
                     time.sleep(2)
                     self.shipalive -= 1
                     print(f"Корабль уничтожен. Осталось {self.shipalive} кораблей")
-                    return False
+                    return True
                 else:
                     time.sleep(2)
                     print("Вижу дым на горизонте! Попадание!")
